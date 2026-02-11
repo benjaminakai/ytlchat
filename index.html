@@ -1,369 +1,848 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Live コメントビューワー</title>
+    <title>YouTube Live コメントビューワー v1.1</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-```
-    body {
-        background-color: #000;
-        color: #fff;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        padding: 20px;
-    }
-    
-    .container {
-        max-width: 100%;
-        margin: 0 auto;
-    }
-    
-    .header {
-        margin-bottom: 20px;
-    }
-    
-    .input-group {
-        margin-bottom: 15px;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-size: 14px;
-        color: #aaa;
-    }
-    
-    input[type="text"] {
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        background-color: #222;
-        color: #fff;
-        border: 1px solid #444;
-        border-radius: 8px;
-    }
-    
-    .controls {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-    
-    button {
-        padding: 12px 24px;
-        font-size: 16px;
-        background-color: #1a73e8;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-    }
-    
-    button:active {
-        background-color: #1557b0;
-    }
-    
-    button:disabled {
-        background-color: #444;
-        cursor: not-allowed;
-    }
-    
-    .toggle-btn {
-        background-color: #666;
-    }
-    
-    .toggle-btn.active {
-        background-color: #00a67e;
-    }
-    
-    .status {
-        padding: 10px;
-        margin-bottom: 20px;
-        background-color: #1a1a1a;
-        border-radius: 8px;
-        font-size: 14px;
-        color: #aaa;
-    }
-    
-    .comments {
-        background-color: #1a1a1a;
-        border-radius: 8px;
-        padding: 15px;
-        height: calc(100vh - 280px);
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column-reverse;
-    }
-    
-    .comment {
-        padding: 15px;
-        margin-bottom: 10px;
-        background-color: #2a2a2a;
-        border-radius: 8px;
-        border-left: 4px solid #1a73e8;
-        animation: slideIn 0.3s ease-out;
-    }
-    
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
+            font-weight: bold;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+        
+        .container {
+            max-width: 100%;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-    }
-    
-    .comment-author {
-        font-weight: bold;
-        font-size: 18px;
-        color: #4a9eff;
-        margin-bottom: 8px;
-    }
-    
-    .comment-text {
-        font-size: 20px;
-        line-height: 1.5;
-        word-wrap: break-word;
-    }
-    
-    .comment-time {
-        font-size: 12px;
-        color: #888;
-        margin-top: 5px;
-    }
-    
-    .error {
-        color: #ff6b6b;
-        padding: 10px;
-        background-color: #2a1a1a;
-        border-radius: 8px;
-        margin-bottom: 10px;
-    }
-</style>
-```
-
+        
+        .header {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #000;
+            border-bottom: 1px solid #333;
+        }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+            color: #aaa;
+            flex-wrap: wrap;
+        }
+        
+        .live-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+        
+        .live-status.live {
+            color: #ff4444;
+        }
+        
+        .live-status.offline {
+            color: #666;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .mic-level {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px;
+            background-color: #1a1a1a;
+            border-radius: 5px;
+        }
+        
+        .mic-level.active {
+            display: flex;
+        }
+        
+        .level-bar {
+            width: 100px;
+            height: 8px;
+            background-color: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+        .header button {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            display: none;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #222;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:active {
+            background-color: #1557b0;
+        }
+        
+        button:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+        }
+        
+        .toggle-btn {
+            background-color: #00a67e;
+        }
+        
+        .toggle-btn.inactive {
+            background-color: #666;
+        }
+        
+        .settings-btn {
+            background-color: #444;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        
+        .font-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .font-btn {
+            background-color: #333;
+            padding: 8px 12px;
+            font-size: 14px;
+            min-width: 40px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid #444;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background-color: transparent;
+            color: #aaa;
+            font-size: 24px;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-input-group {
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .status {
+            display: none;
+        }
+        
+        .comments {
+            background-color: #000;
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        
+        .comment {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            border-left: 4px solid #1a73e8;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .comment-author {
+            font-weight: bold;
+            font-size: var(--font-size-author, 18px);
+            color: #4a9eff;
+            margin-bottom: 8px;
+        }
+        
+        .comment-text {
+            font-size: var(--font-size-text, 22px);
+            line-height: 1.5;
+            word-wrap: break-word;
+            color: #fff;
+        }
+        
+        .comment-time {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            padding: 10px;
+            background-color: #2a1a1a;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="input-group">
-                <label for="apiKey">YouTube API キー</label>
-                <input type="text" id="apiKey" placeholder="AIza...">
+            <div class="status-bar">
+                <div class="live-status offline" id="liveStatus">
+                    <span>⚫</span>
+                    <span id="statusText">オフライン</span>
+                </div>
+                <div class="stats">
+                    <div class="stat-item" id="viewerCount" style="display: none;">
+                        👁️ <span id="viewers">-</span>
+                    </div>
+                    <div class="stat-item" id="likeCount" style="display: none;">
+                        👍 <span id="likes">-</span>
+                    </div>
+                </div>
+                <div class="mic-level" id="micLevel">
+                    🎤 <div class="level-bar"><div class="level-fill" id="levelFill"></div></div>
+                </div>
             </div>
-
-```
-        <div class="input-group">
-            <label for="channelUrl">チャンネルURL</label>
-            <input type="text" id="channelUrl" placeholder="https://www.youtube.com/@チャンネル名">
+            <div class="controls">
+                <button id="startBtn">配信を検索</button>
+                <button id="stopBtn" class="stop-btn" style="display: none;">停止</button>
+                <button id="voiceBtn" class="toggle-btn">🔊</button>
+                <div class="font-controls">
+                    <button id="fontDown" class="font-btn">A-</button>
+                    <button id="fontUp" class="font-btn">A+</button>
+                </div>
+                <button id="settingsBtn" class="settings-btn">⚙️</button>
+            </div>
         </div>
         
-        <div class="controls">
-            <button id="startBtn">配信を検索</button>
-            <button id="voiceBtn" class="toggle-btn">🔇 読み上げOFF</button>
-        </div>
-        
-        <div class="status" id="status">APIキーとチャンネルURLを入力してください</div>
+        <div class="comments" id="comments"></div>
     </div>
-    
-    <div class="comments" id="comments"></div>
-</div>
 
-<script>
-    let apiKey = '';
-    let channelId = '';
-    let liveChatId = '';
-    let nextPageToken = '';
-    let pollingInterval = null;
-    let voiceEnabled = false;
-    let processedComments = new Set();
-    
-    const synth = window.speechSynthesis;
-    
-    document.getElementById('startBtn').addEventListener('click', start);
-    document.getElementById('voiceBtn').addEventListener('click', toggleVoice);
-    
-    function toggleVoice() {
-        voiceEnabled = !voiceEnabled;
-        const btn = document.getElementById('voiceBtn');
+    <!-- 設定モーダル -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">設定</div>
+                <button class="close-btn" id="closeModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-group">
+                    <label for="apiKeyInput">YouTube API キー</label>
+                    <input type="text" id="apiKeyInput" placeholder="AIza...">
+                </div>
+                <div class="modal-input-group">
+                    <label for="channelHandleInput">チャンネル名</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span style="color: #aaa;">https://www.youtube.com/@</span>
+                        <input type="text" id="channelHandleInput" placeholder="チャンネル名" style="flex: 1;">
+                    </div>
+                </div>
+                <div style="border-top: 1px solid #333; padding-top: 20px;">
+                    <div style="font-size: 16px; margin-bottom: 10px; color: #aaa;">読み上げ設定</div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="skipNameCheck">
+                        <label for="skipNameCheck">名前を読まない</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="skipEmojiCheck">
+                        <label for="skipEmojiCheck">絵文字を読まない</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="micLevelCheck">
+                        <label for="micLevelCheck">マイク音量メーター表示</label>
+                    </div>
+                    <div class="modal-input-group" style="margin-top: 20px;">
+                        <label for="speedRange">読み上げ速度: <span id="speedValue">1.0</span>x</label>
+                        <input type="range" id="speedRange" min="0.5" max="2.0" step="0.1" value="1.0" style="width: 100%; cursor: pointer;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-top: 5px;">
+                            <span>遅い (0.5x)</span>
+                            <span>速い (2.0x)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettings">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = localStorage.getItem('youtubeApiKey') || '';
+        let channelHandle = localStorage.getItem('channelHandle') || '';
+        let channelId = '';
+        let liveChatId = '';
+        let videoId = '';
+        let nextPageToken = '';
+        let pollingInterval = null;
+        let statsInterval = null;
+        let errorCount = 0;
+        let voiceEnabled = localStorage.getItem('voiceEnabled') !== 'false'; // デフォルトON
+        let skipName = localStorage.getItem('skipName') === 'true';
+        let skipEmoji = localStorage.getItem('skipEmoji') === 'true';
+        let micLevelEnabled = localStorage.getItem('micLevelEnabled') === 'true';
+        let voiceSpeed = parseFloat(localStorage.getItem('voiceSpeed')) || 1.0;
+        let processedComments = new Set();
+        let fontSize = parseInt(localStorage.getItem('fontSize')) || 22;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        
+        const synth = window.speechSynthesis;
+        
+        // フォントサイズを適用
+        document.documentElement.style.setProperty('--font-size-text', `${fontSize}px`);
+        document.documentElement.style.setProperty('--font-size-author', `${Math.floor(fontSize * 0.8)}px`);
+        
+        // ボタンの初期状態を設定
+        updateVoiceButton();
+        
+        document.getElementById('startBtn').addEventListener('click', start);
+        document.getElementById('stopBtn').addEventListener('click', stop);
+        document.getElementById('voiceBtn').addEventListener('click', toggleVoice);
+        document.getElementById('settingsBtn').addEventListener('click', openSettings);
+        document.getElementById('closeModal').addEventListener('click', closeSettings);
+        document.getElementById('saveSettings').addEventListener('click', saveSettings);
+        document.getElementById('fontUp').addEventListener('click', () => changeFontSize(2));
+        document.getElementById('fontDown').addEventListener('click', () => changeFontSize(-2));
+        document.getElementById('speedRange').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = e.target.value;
+        });
+        
+        // マイクレベル初期化
+        if (micLevelEnabled) {
+            initMicrophone();
+        }
+        
+        // 初期化：APIキーがあるか確認
+        if (!apiKey || !channelHandle) {
+            openSettings();
+        }
+        
+        // 初回起動時に音声を初期化
         if (voiceEnabled) {
-            btn.classList.add('active');
-            btn.textContent = '🔊 読み上げON';
-        } else {
-            btn.classList.remove('active');
-            btn.textContent = '🔇 読み上げOFF';
-            synth.cancel();
-        }
-    }
-    
-    function setStatus(message, isError = false) {
-        const status = document.getElementById('status');
-        status.textContent = message;
-        status.style.color = isError ? '#ff6b6b' : '#aaa';
-    }
-    
-    async function start() {
-        apiKey = document.getElementById('apiKey').value.trim();
-        const channelUrl = document.getElementById('channelUrl').value.trim();
-        
-        if (!apiKey || !channelUrl) {
-            setStatus('APIキーとチャンネルURLを入力してください', true);
-            return;
+            const utterance = new SpeechSynthesisUtterance('');
+            utterance.lang = 'ja-JP';
+            utterance.volume = 0.01;
+            synth.speak(utterance);
         }
         
-        setStatus('チャンネル情報を取得中...');
-        document.getElementById('startBtn').disabled = true;
+        function changeFontSize(delta) {
+            fontSize = Math.max(14, Math.min(40, fontSize + delta));
+            localStorage.setItem('fontSize', fontSize);
+            document.documentElement.style.setProperty('--font-size-text', `${fontSize}px`);
+            document.documentElement.style.setProperty('--font-size-author', `${Math.floor(fontSize * 0.8)}px`);
+        }
         
-        try {
-            // @チャンネル名からチャンネルIDを取得
-            const handle = channelUrl.split('@')[1]?.split('/')[0];
-            if (!handle) {
-                throw new Error('チャンネルURLの形式が正しくありません');
+        function openSettings() {
+            document.getElementById('apiKeyInput').value = apiKey;
+            document.getElementById('channelHandleInput').value = channelHandle;
+            document.getElementById('skipNameCheck').checked = skipName;
+            document.getElementById('skipEmojiCheck').checked = skipEmoji;
+            document.getElementById('micLevelCheck').checked = micLevelEnabled;
+            document.getElementById('speedRange').value = voiceSpeed;
+            document.getElementById('speedValue').textContent = voiceSpeed.toFixed(1);
+            document.getElementById('settingsModal').classList.add('show');
+        }
+        
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+        
+        function saveSettings() {
+            const newApiKey = document.getElementById('apiKeyInput').value.trim();
+            const newChannelHandle = document.getElementById('channelHandleInput').value.trim();
+            
+            if (!newApiKey || !newChannelHandle) {
+                alert('APIキーとチャンネル名を入力してください');
+                return;
             }
             
-            const searchResponse = await fetch(
-                `https://www.googleapis.com/youtube/v3/search?part=snippet&q=@${handle}&type=channel&key=${apiKey}`
-            );
-            const searchData = await searchResponse.json();
+            apiKey = newApiKey;
+            channelHandle = newChannelHandle;
+            skipName = document.getElementById('skipNameCheck').checked;
+            skipEmoji = document.getElementById('skipEmojiCheck').checked;
+            const newMicLevel = document.getElementById('micLevelCheck').checked;
+            voiceSpeed = parseFloat(document.getElementById('speedRange').value);
             
-            if (searchData.error) {
-                throw new Error(searchData.error.message);
+            localStorage.setItem('youtubeApiKey', apiKey);
+            localStorage.setItem('channelHandle', channelHandle);
+            localStorage.setItem('skipName', skipName);
+            localStorage.setItem('skipEmoji', skipEmoji);
+            localStorage.setItem('micLevelEnabled', newMicLevel);
+            localStorage.setItem('voiceSpeed', voiceSpeed);
+            
+            // マイクレベル設定変更
+            if (newMicLevel !== micLevelEnabled) {
+                micLevelEnabled = newMicLevel;
+                if (micLevelEnabled) {
+                    initMicrophone();
+                } else {
+                    stopMicrophone();
+                }
             }
             
-            if (!searchData.items || searchData.items.length === 0) {
-                throw new Error('チャンネルが見つかりませんでした');
+            closeSettings();
+        }
+        
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceBtn');
+            if (voiceEnabled) {
+                btn.classList.remove('inactive');
+                btn.textContent = '🔊';
+            } else {
+                btn.classList.add('inactive');
+                btn.textContent = '🔇';
+            }
+        }
+        
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            localStorage.setItem('voiceEnabled', voiceEnabled);
+            updateVoiceButton();
+            
+            if (voiceEnabled) {
+                // iOSのために音声初期化
+                const utterance = new SpeechSynthesisUtterance('読み上げを開始します');
+                utterance.lang = 'ja-JP';
+                utterance.volume = 0.01;
+                synth.speak(utterance);
+            } else {
+                synth.cancel();
+            }
+        }
+        
+        function setStatus(message, isError = false) {
+            console.log(message);
+        }
+        
+        async function start() {
+            if (!apiKey || !channelHandle) {
+                alert('設定からAPIキーとチャンネル名を入力してください');
+                openSettings();
+                return;
             }
             
-            channelId = searchData.items[0].snippet.channelId;
-            setStatus('ライブ配信を検索中...');
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').textContent = '検索中...';
+            errorCount = 0;
             
-            // ライブ配信を検索
-            const liveResponse = await fetch(
-                `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&key=${apiKey}`
-            );
-            const liveData = await liveResponse.json();
-            
-            if (liveData.error) {
-                throw new Error(liveData.error.message);
+            try {
+                const searchResponse = await fetch(
+                    `https://www.googleapis.com/youtube/v3/search?part=snippet&q=@${channelHandle}&type=channel&key=${apiKey}`
+                );
+                const searchData = await searchResponse.json();
+                
+                if (searchData.error) {
+                    throw new Error(searchData.error.message);
+                }
+                
+                if (!searchData.items || searchData.items.length === 0) {
+                    throw new Error('チャンネルが見つかりませんでした');
+                }
+                
+                channelId = searchData.items[0].snippet.channelId;
+                
+                // ライブ配信を検索
+                const liveResponse = await fetch(
+                    `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&key=${apiKey}`
+                );
+                const liveData = await liveResponse.json();
+                
+                if (liveData.error) {
+                    throw new Error(liveData.error.message);
+                }
+                
+                if (!liveData.items || liveData.items.length === 0) {
+                    throw new Error('現在ライブ配信が見つかりませんでした');
+                }
+                
+                videoId = liveData.items[0].id.videoId;
+                
+                // ライブチャットIDを取得
+                const videoResponse = await fetch(
+                    `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${apiKey}`
+                );
+                const videoData = await videoResponse.json();
+                
+                if (videoData.error) {
+                    throw new Error(videoData.error.message);
+                }
+                
+                liveChatId = videoData.items[0].liveStreamingDetails.activeLiveChatId;
+                
+                if (!liveChatId) {
+                    throw new Error('ライブチャットが見つかりませんでした');
+                }
+                
+                // UI更新
+                setLiveStatus(true);
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'block';
+                document.getElementById('viewerCount').style.display = 'flex';
+                document.getElementById('likeCount').style.display = 'flex';
+                
+                // コメント・統計取得開始
+                fetchComments();
+                fetchStats();
+                pollingInterval = setInterval(fetchComments, 3000);
+                statsInterval = setInterval(fetchStats, 60000);
+                
+            } catch (error) {
+                alert(`エラー: ${error.message}`);
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('startBtn').textContent = '配信を検索';
             }
+        }
+        
+        function stop() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            if (statsInterval) clearInterval(statsInterval);
+            pollingInterval = null;
+            statsInterval = null;
+            errorCount = 0;
             
-            if (!liveData.items || liveData.items.length === 0) {
-                throw new Error('現在ライブ配信が見つかりませんでした');
-            }
-            
-            const videoId = liveData.items[0].id.videoId;
-            setStatus('チャット情報を取得中...');
-            
-            // ライブチャットIDを取得
-            const videoResponse = await fetch(
-                `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${apiKey}`
-            );
-            const videoData = await videoResponse.json();
-            
-            if (videoData.error) {
-                throw new Error(videoData.error.message);
-            }
-            
-            liveChatId = videoData.items[0].liveStreamingDetails.activeLiveChatId;
-            
-            if (!liveChatId) {
-                throw new Error('ライブチャットが見つかりませんでした');
-            }
-            
-            setStatus('チャットを監視中...');
-            
-            // コメント取得開始
-            fetchComments();
-            pollingInterval = setInterval(fetchComments, 5000);
-            
-        } catch (error) {
-            setStatus(`エラー: ${error.message}`, true);
+            setLiveStatus(false);
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
             document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = '配信を検索';
+            document.getElementById('viewerCount').style.display = 'none';
+            document.getElementById('likeCount').style.display = 'none';
         }
-    }
-    
-    async function fetchComments() {
-        try {
-            let url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${liveChatId}&part=snippet,authorDetails&key=${apiKey}`;
-            
-            if (nextPageToken) {
-                url += `&pageToken=${nextPageToken}`;
+        
+        function setLiveStatus(isLive) {
+            const status = document.getElementById('liveStatus');
+            const text = document.getElementById('statusText');
+            if (isLive) {
+                status.classList.remove('offline');
+                status.classList.add('live');
+                status.querySelector('span').textContent = '🔴';
+                text.textContent = 'LIVE';
+            } else {
+                status.classList.remove('live');
+                status.classList.add('offline');
+                status.querySelector('span').textContent = '⚫';
+                text.textContent = 'オフライン';
             }
-            
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.error) {
-                throw new Error(data.error.message);
+        }
+        
+        async function fetchComments() {
+            try {
+                let url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${liveChatId}&part=snippet,authorDetails&key=${apiKey}`;
+                
+                if (nextPageToken) {
+                    url += `&pageToken=${nextPageToken}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+                
+                // エラーカウントをリセット
+                errorCount = 0;
+                
+                nextPageToken = data.nextPageToken;
+                
+                if (data.items) {
+                    data.items.forEach(item => {
+                        const commentId = item.id;
+                        if (!processedComments.has(commentId)) {
+                            processedComments.add(commentId);
+                            displayComment(item);
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('コメント取得エラー:', error);
+                errorCount++;
+                
+                // 3回連続エラーで自動停止
+                if (errorCount >= 3) {
+                    alert('配信が終了したか、エラーが発生しました');
+                    stop();
+                }
             }
-            
-            nextPageToken = data.nextPageToken;
-            
-            if (data.items) {
-                data.items.forEach(item => {
-                    const commentId = item.id;
-                    if (!processedComments.has(commentId)) {
-                        processedComments.add(commentId);
-                        displayComment(item);
+        }
+        
+        async function fetchStats() {
+            try {
+                const response = await fetch(
+                    `https://www.googleapis.com/youtube/v3/videos?part=statistics,liveStreamingDetails&id=${videoId}&key=${apiKey}`
+                );
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+                
+                if (data.items && data.items[0]) {
+                    const stats = data.items[0].statistics;
+                    const liveDetails = data.items[0].liveStreamingDetails;
+                    
+                    // 視聴者数
+                    if (liveDetails && liveDetails.concurrentViewers) {
+                        document.getElementById('viewers').textContent = parseInt(liveDetails.concurrentViewers).toLocaleString();
                     }
-                });
+                    
+                    // いいね数
+                    if (stats && stats.likeCount) {
+                        document.getElementById('likes').textContent = parseInt(stats.likeCount).toLocaleString();
+                    }
+                }
+                
+            } catch (error) {
+                console.error('統計取得エラー:', error);
+            }
+        }
+        
+        function displayComment(item) {
+            const author = item.authorDetails.displayName;
+            const text = item.snippet.displayMessage;
+            const time = new Date(item.snippet.publishedAt).toLocaleTimeString('ja-JP');
+            
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            commentDiv.innerHTML = `
+                <div class="comment-author">${author}</div>
+                <div class="comment-text">${text}</div>
+                <div class="comment-time">${time}</div>
+            `;
+            
+            const commentsDiv = document.getElementById('comments');
+            commentsDiv.insertBefore(commentDiv, commentsDiv.firstChild);
+            
+            // 読み上げ
+            if (voiceEnabled) {
+                speakComment(author, text);
             }
             
-        } catch (error) {
-            console.error('コメント取得エラー:', error);
-            setStatus(`エラー: ${error.message}`, true);
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
+            // 古いコメントを削除（メモリ節約）
+            while (commentsDiv.children.length > 50) {
+                commentsDiv.removeChild(commentsDiv.lastChild);
             }
-            document.getElementById('startBtn').disabled = false;
-        }
-    }
-    
-    function displayComment(item) {
-        const author = item.authorDetails.displayName;
-        const text = item.snippet.displayMessage;
-        const time = new Date(item.snippet.publishedAt).toLocaleTimeString('ja-JP');
-        
-        const commentDiv = document.createElement('div');
-        commentDiv.className = 'comment';
-        commentDiv.innerHTML = `
-            <div class="comment-author">${author}</div>
-            <div class="comment-text">${text}</div>
-            <div class="comment-time">${time}</div>
-        `;
-        
-        const commentsDiv = document.getElementById('comments');
-        commentsDiv.insertBefore(commentDiv, commentsDiv.firstChild);
-        
-        // 読み上げ
-        if (voiceEnabled) {
-            speakComment(author, text);
         }
         
-        // 古いコメントを削除（メモリ節約）
-        while (commentsDiv.children.length > 50) {
-            commentsDiv.removeChild(commentsDiv.lastChild);
+        function speakComment(author, text) {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            
+            // 絵文字を削除
+            let speakText = text;
+            if (skipEmoji) {
+                speakText = speakText.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}\u{238C}-\u{2454}\u{20D0}-\u{20FF}\u{FE00}-\u{FE0F}]/gu, '');
+            }
+            
+            // 名前を含めるかどうか
+            const fullText = skipName ? speakText : `${author}さん、${speakText}`;
+            
+            const utterance = new SpeechSynthesisUtterance(fullText);
+            utterance.lang = 'ja-JP';
+            utterance.rate = voiceSpeed;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // iOSのための対策
+            utterance.onend = () => {
+                console.log('読み上げ完了');
+            };
+            
+            synth.speak(utterance);
         }
-    }
-    
-    function speakComment(author, text) {
-        const utterance = new SpeechSynthesisUtterance(`${author}さん、${text}`);
-        utterance.lang = 'ja-JP';
-        utterance.rate = 1.1;
-        synth.speak(utterance);
-    }
-</script>
-```
-
+        
+        // マイク音量メーター
+        async function initMicrophone() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                analyser.fftSize = 256;
+                microphone.connect(analyser);
+                
+                document.getElementById('micLevel').classList.add('active');
+                updateMicLevel();
+            } catch (error) {
+                console.error('マイクアクセスエラー:', error);
+                alert('マイクへのアクセスが拒否されました');
+                micLevelEnabled = false;
+                localStorage.setItem('micLevelEnabled', false);
+            }
+        }
+        
+        function updateMicLevel() {
+            if (!analyser || !micLevelEnabled) return;
+            
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            
+            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            const percentage = Math.min(100, (average / 128) * 100);
+            
+            document.getElementById('levelFill').style.width = `${percentage}%`;
+            
+            requestAnimationFrame(updateMicLevel);
+        }
+        
+        function stopMicrophone() {
+            if (microphone) {
+                microphone.disconnect();
+                microphone = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            analyser = null;
+            document.getElementById('micLevel').classList.remove('active');
+        }
+    </script>
 </body>
 </html>
